@@ -1,5 +1,6 @@
 const AirtableService = require("./airtableService");
 const moment = require("moment");
+const { parseProperties } = require("../utils/utils");
 
 class QuestionsService extends AirtableService {
   constructor() {
@@ -45,6 +46,7 @@ class QuestionsService extends AirtableService {
   async createQuestion(data) {
     const {
       question,
+      answer,
       questionDescription,
       createdBy,
       assignedTo,
@@ -57,29 +59,36 @@ class QuestionsService extends AirtableService {
 
     const fields = {
       Question: question,
+      Answer: answer || "",
       ["Question Description"]: questionDescription || "",
       ["Created By"]: createdBy,
       ["Updated By"]: createdBy,
-      ["Assigned To"]: assignedTo,
-      Properties: Object.entries(properties)
-        .map(([key, value]) => `${key}:${value}`)
-        .join(","),
+      ["Assigned To"]: assignedTo || "",
+      Properties: parseProperties(properties),
     };
 
     return await this.createRecord(fields);
   }
 
   async updateQuestion(id, data) {
-    const { question, questionDescription, updatedBy, properties, status } =
-      data;
+    const {
+      question,
+      questionDescription,
+      updatedBy,
+      properties,
+      assignedTo,
+      answer,
+    } = data;
 
     const fields = {
       ...(question && { Question: question }),
-      ...(questionDescription && { QuestionDescription: questionDescription }),
-      UpdatedAt: moment().toISOString(),
-      UpdatedBy: updatedBy,
-      ...(properties && { Properties: JSON.stringify(properties) }),
-      ...(status && { Status: status }),
+      ...(answer && { Answer: answer }),
+      ...(assignedTo && { ["Assigned To"]: assignedTo }),
+      ...(questionDescription && {
+        ["Question Description"]: questionDescription,
+      }),
+      ["Updated By"]: updatedBy,
+      ...(properties && { Properties: parseProperties(properties) }),
     };
 
     return await this.updateRecord(id, fields);

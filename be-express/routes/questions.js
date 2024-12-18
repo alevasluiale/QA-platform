@@ -48,4 +48,17 @@ router.post("/", async (req, res, next) => {
   }
 });
 
+router.patch("/:id", async (req, res, next) => {
+  try {
+    const questionId = req.params.id;
+    const updatedQuestion = await questionService.updateQuestion(
+      questionId,
+      req.body,
+    );
+    res.json(updatedQuestion);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;
