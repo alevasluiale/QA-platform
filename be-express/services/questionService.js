@@ -43,7 +43,13 @@ class QuestionsService extends AirtableService {
   }
 
   async createQuestion(data) {
-    const { question, questionDescription, createdBy, properties = {} } = data;
+    const {
+      question,
+      questionDescription,
+      createdBy,
+      assignedTo,
+      properties = {},
+    } = data;
 
     if (!question) {
       throw new Error("Question is required");
@@ -51,13 +57,13 @@ class QuestionsService extends AirtableService {
 
     const fields = {
       Question: question,
-      QuestionDescription: questionDescription || "",
-      CreatedAt: moment().toISOString(),
-      CreatedBy: createdBy,
-      UpdatedAt: moment().toISOString(),
-      UpdatedBy: createdBy,
-      Status: "Unanswered",
-      Properties: JSON.stringify(properties),
+      ["Question Description"]: questionDescription || "",
+      ["Created By"]: createdBy,
+      ["Updated By"]: createdBy,
+      ["Assigned To"]: assignedTo,
+      Properties: Object.entries(properties)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(","),
     };
 
     return await this.createRecord(fields);
